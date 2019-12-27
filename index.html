@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>HugeMaze</title>
+<meta charset="UTF-8">
+<style>
+body {
+    margin: 0;
+    padding: 0;
+}
+
+#main {
+    padding: 20px;
+}
+
+.pixelated {
+    -ms-interpolation-mode: nearest-neighbor;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -o-crisp-edges;
+    image-rendering: pixelated;
+}
+</style>
+</head>
+<body>
+<div id="main">
+    <h1>HugeMaze</h1>
+    <p>made with <a href="https://github.com//koher/makemaze">"makemaze"</a></p>
+    <div><span style="color: #0000FF;">■</span>: START, <span style="color: #FF0000;">■</span>: GOAL</div>
+    <div>
+        <img class="pixelated" src="img/maze.png" alt="HugeMaze" style="width: 8188px; height: 8188px;" />
+    </div>
+</div>
+</body>
+</html>
