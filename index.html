@@ -9,7 +9,26 @@ body {
     padding: 0;
 }
 
-#main {
+main {
+    margin: 0;
+    padding: 0;
+}
+
+main>header {
+    margin: 0;
+    padding: 0 20px;
+    position: sticky;
+    top: 0;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+}
+
+main>header>.item {
+    margin-right: 20px;
+}
+
+#maze {
     padding: 20px;
 }
 
@@ -31,8 +50,14 @@ const goalColor   = '#FF0000FF';
 
 const scale = 4;
 function main() {
-    let canvas = document.getElementById('maze');
+    let canvas = document.getElementById('maze').getElementsByTagName('canvas')[0];
     let context = canvas.getContext('2d');
+
+    function drawCell(context, x, y, style) {
+        context.fillStyle = style.substr(0, 7);
+        context.fillRect(x * scale, y * scale, scale, scale);
+    }
+
     let image = new Image();
     image.src = './img/maze.png';
     image.addEventListener('load', () => {
@@ -43,6 +68,28 @@ function main() {
         context.drawImage(image, 0, 0, image.width, image.height, 0, 0, image.width * scale, image.height * scale);
 
         let maze = context.getImageData(0, 0, image.width, image.height);
+
+        function move(dx, dy) {
+            const newX = player.x + dx;
+            const newY = player.y + dy;
+            const newPixelColor = toHexColor(getPixel(maze, newX * scale, newY * scale));
+
+            if (newPixelColor === '#000000FF') {
+                return;
+            }
+
+            const oldPixelColor = toHexColor(getPixel(maze, player.x * scale, player.y * scale));
+
+            if (oldPixelColor === startColor || oldPixelColor === goalColor) {
+                drawCell(context, player.x, player.y, oldPixelColor);
+            } else {
+                drawCell(context, player.x, player.y, trackColor);
+            }
+
+            player.x = newX;
+            player.y = newY;
+            drawCell(context, player.x, player.y, playerColor);
+        }
 
         drawCell(context, player.x, player.y, playerColor);
 
@@ -64,32 +111,22 @@ function main() {
 
             event.preventDefault();
 
-            const newX = player.x + dx;
-            const newY = player.y + dy;
-            const newPixelColor = toHexColor(getPixel(maze, newX * scale, newY * scale));
-
-            if (newPixelColor === '#000000FF') {
-                return;
-            }
-
-            const oldPixelColor = toHexColor(getPixel(maze, player.x * scale, player.y * scale));
-
-            if (oldPixelColor === startColor || oldPixelColor === goalColor) {
-                drawCell(context, player.x, player.y, oldPixelColor);
-            } else {
-                drawCell(context, player.x, player.y, trackColor);
-            }
-
-            player.x = newX;
-            player.y = newY;
-            drawCell(context, player.x, player.y, playerColor);
+            move(dx, dy);
         });
-    }, false);
-}
 
-function drawCell(context, x, y, style) {
-    context.fillStyle = style.substr(0, 7);
-    context.fillRect(x * scale, y * scale, scale, scale);
+        document.getElementById('left-button').onclick = () => {
+            move(-1, 0);
+        };
+        document.getElementById('up-button').onclick = () => {
+            move(0, -1);
+        };
+        document.getElementById('down-button').onclick = () => {
+            move(0, 1);
+        };
+        document.getElementById('right-button').onclick = () => {
+            move(1, 0);
+        };
+    }, false);
 }
 
 function getPixel(image, x, y) {
@@ -113,11 +150,21 @@ function toHexColor(pixel) {
 </script>
 </head>
 <body onload="main()">
-<div id="main">
-    <h1>HugeMaze</h1>
-    <p>made with <a href="https://github.com/koher/makemaze">"makemaze"</a></p>
-    <div><span style="color: #00FF00;">■</span>: PLAYER, </span><span style="color: #0000FF;">■</span>: START, <span style="color: #FF0000;">■</span>: GOAL</div>
-    <canvas id="maze" class="pixelated" width="8188" height="8188"></canvas>
-</div>
+<main>
+    <header>
+        <h1 class="item">HugeMaze</h1>
+        <div class="item">
+            <button id="left-button">←</button>
+            <button id="up-button">↑</button>
+            <button id="down-button">↓</button>
+            <button id="right-button">→</button>
+        </div>
+        <div class="item"><span style="color: #00FF00;">■</span>: PLAYER, </span><span style="color: #0000FF;">■</span>: START, <span style="color: #FF0000;">■</span>: GOAL</div>
+        <div class="item">made with <a href="https://github.com/koher/makemaze">"makemaze"</a></div>
+    </header>
+    <div id="maze">
+        <canvas class="pixelated" width="8188" height="8188"></canvas>
+    </div>
+</main>
 </body>
 </html>
