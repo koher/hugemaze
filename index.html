@@ -89,6 +89,7 @@ button {
 <script>
 let position = { x: 1, y: 1 };
 let tracks = [];
+let trackKeySet = {};
 
 const playerColor = '#00FF00FF';
 const trackColor  = '#CFFFCFFF';
@@ -151,16 +152,19 @@ function main() {
                     context.drawImage(image, 0, 0, image.width, image.height, 0, 0, image.width * scale, image.height * scale);
                     for (const track of tracks) {
                         drawTrack(track.x, track.y);
+                        trackKeySet[toPositionKey(track)] = true;
                     }
-                    drawCell(position.x, position.y, playerColor);
+                    jump(position.x, position.y)
                 }
             }
         }
 
         function move(dx, dy) {
-            const newX = position.x + dx;
-            const newY = position.y + dy;
-            const newPixelColor = toHexColor(getPixel(maze, newX * scale, newY * scale));
+            jump(position.x + dx, position.y + dy);
+        }
+
+        function jump(x, y) {
+            const newPixelColor = toHexColor(getPixel(maze, x * scale, y * scale));
 
             if (newPixelColor === '#000000FF') {
                 return;
@@ -168,9 +172,10 @@ function main() {
 
             drawTrack(position.x, position.y);
             tracks.push(Object.assign({}, position));
+            trackKeySet[toPositionKey(position)] = true;
 
-            position.x = newX;
-            position.y = newY;
+            position.x = x;
+            position.y = y;
             drawCell(position.x, position.y, playerColor);
         }
 
@@ -204,6 +209,19 @@ function main() {
 
             move(dx, dy);
         });
+
+        document.addEventListener('click', (event) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = Math.floor((event.clientX - rect.left) / scale);
+            const y = Math.floor((event.clientY - rect.top) / scale);
+            if (x < 0 || y < 0 || x >= image.width || y >= image.height) {
+                return;
+            }
+            if (!trackKeySet[toPositionKey({x: x, y: y})]) {
+                return;
+            }
+            jump(x, y);
+        });
     }, false);
 }
 
@@ -225,6 +243,10 @@ function toHexColor(pixel) {
         + ('0' + pixel[3].toString(16)).substr(-2)
     ).toUpperCase();
 }
+
+function toPositionKey(position) {
+    return position.x + ',' + position.y;
+}
 </script>
 </head>
 <body onload="main()">
@@ -235,7 +257,7 @@ function toHexColor(pixel) {
     </header>
     <div id="manumal">
         <h2>遊び方</h2>
-        <p>左上のスタート<span style="color: #0000FF;">■</span>からはじめて右下のゴール<span style="color: #FF0000;">■</span>を目指します。現在位置は<span style="color: #00FF00;">■</span>で表され、次のキーで移動します。</p>
+        <p>左上のスタート<span style="color: #0000FF;">■</span>からはじめて右下のゴール<span style="color: #FF0000;">■</span>を目指します。現在位置は<span style="color: #00FF00;">■</span>で表され、次のキーで移動します。これまでに通ったマスは<span style="color: #CFFFCFFF;">■</span>で表され、クリックまたはタップでそのマスにジャンプできます。</p>
         <table>
             <tr><th colspan="8">操作方法</th></tr>
             <tr><th>←</th><td>←, 4, A</td><th>↑</th><td>↑, 2, W</td><th>↓</th><td>↓, 8, S</td><th>→</th><td>→, 6, D</td></tr>
