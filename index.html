@@ -87,7 +87,7 @@ button {
 }
 </style>
 <script>
-let player = { x: 1, y: 1 }
+const player = { x: 1, y: 1 }
 
 const playerColor = '#00FF00FF';
 const trackColor  = '#CFFFCFFF';
@@ -96,22 +96,22 @@ const goalColor   = '#FF0000FF';
 
 const scale = 4;
 function main() {
-    let input = document.getElementById('control').getElementsByTagName('input')[0];
+    const input = document.getElementById('control').getElementsByTagName('input')[0];
     document.getElementById('keyboard-button').onclick = () => {
         input.style.visibility = 'visible';
         input.focus();
         input.style.visibility = 'hidden';
     };
 
-    let canvas = document.getElementById('maze').getElementsByTagName('canvas')[0];
-    let context = canvas.getContext('2d');
+    const canvas = document.getElementById('maze').getElementsByTagName('canvas')[0];
+    const context = canvas.getContext('2d');
 
     function drawCell(context, x, y, style) {
         context.fillStyle = style.substr(0, 7);
         context.fillRect(x * scale, y * scale, scale, scale);
     }
 
-    let image = new Image();
+    const image = new Image();
     image.src = './img/maze-1023x1023.png';
     image.addEventListener('load', () => {
         context.mozImageSmoothingEnabled = false;
@@ -120,7 +120,7 @@ function main() {
         context.imageSmoothingEnabled = false;
         context.drawImage(image, 0, 0, image.width, image.height, 0, 0, image.width * scale, image.height * scale);
 
-        let maze = context.getImageData(0, 0, image.width, image.height);
+        const maze = context.getImageData(0, 0, image.width, image.height);
 
         function move(dx, dy) {
             const newX = player.x + dx;
