@@ -87,7 +87,8 @@ button {
 }
 </style>
 <script>
-const player = { x: 1, y: 1 }
+let position = { x: 1, y: 1 };
+let tracks = [];
 
 const playerColor = '#00FF00FF';
 const trackColor  = '#CFFFCFFF';
@@ -96,6 +97,8 @@ const goalColor   = '#FF0000FF';
 
 const scale = 4;
 function main() {
+    const mazeName = 'maze-1023x1023.png';
+
     const input = document.getElementById('control').getElementsByTagName('input')[0];
     document.getElementById('keyboard-button').onclick = () => {
         input.style.visibility = 'visible';
@@ -106,13 +109,13 @@ function main() {
     const canvas = document.getElementById('maze').getElementsByTagName('canvas')[0];
     const context = canvas.getContext('2d');
 
-    function drawCell(context, x, y, style) {
+    function drawCell(x, y, style) {
         context.fillStyle = style.substr(0, 7);
         context.fillRect(x * scale, y * scale, scale, scale);
     }
 
     const image = new Image();
-    image.src = './img/maze-1023x1023.png';
+    image.src = './img/' + mazeName;
     image.addEventListener('load', () => {
         context.mozImageSmoothingEnabled = false;
         context.webkitImageSmoothingEnabled = false;
@@ -122,29 +125,64 @@ function main() {
 
         const maze = context.getImageData(0, 0, image.width, image.height);
 
+        function drawTrack(x, y) {
+            const mazeCellColor = toHexColor(getPixel(maze, x * scale, y * scale));
+
+            if (mazeCellColor === startColor || mazeCellColor === goalColor) {
+                drawCell(x, y, mazeCellColor);
+            } else {
+                drawCell(x, y, trackColor);
+            }
+        }
+
+        function save() {
+            if (!localStorage.getItem(mazeName) || confirm('過去のセーブデータに上書きしますがよろしいですか？')) {
+                localStorage.setItem(mazeName, JSON.stringify({ position: position, tracks: tracks }));
+            }
+        }
+
+        function load() {
+            if (confirm('現在の状態が破棄されますがよろしいですか？')) {
+                const data = JSON.parse(localStorage.getItem(mazeName));
+                if (data) {
+                    position = data.position;
+                    tracks = data.tracks;
+
+                    context.drawImage(image, 0, 0, image.width, image.height, 0, 0, image.width * scale, image.height * scale);
+                    for (const track of tracks) {
+                        drawTrack(track.x, track.y);
+                    }
+                    drawCell(position.x, position.y, playerColor);
+                }
+            }
+        }
+
         function move(dx, dy) {
-            const newX = player.x + dx;
-            const newY = player.y + dy;
+            const newX = position.x + dx;
+            const newY = position.y + dy;
             const newPixelColor = toHexColor(getPixel(maze, newX * scale, newY * scale));
 
             if (newPixelColor === '#000000FF') {
                 return;
             }
 
-            const oldPixelColor = toHexColor(getPixel(maze, player.x * scale, player.y * scale));
+            drawTrack(position.x, position.y);
+            tracks.push(Object.assign({}, position));
 
-            if (oldPixelColor === startColor || oldPixelColor === goalColor) {
-                drawCell(context, player.x, player.y, oldPixelColor);
-            } else {
-                drawCell(context, player.x, player.y, trackColor);
-            }
-
-            player.x = newX;
-            player.y = newY;
-            drawCell(context, player.x, player.y, playerColor);
+            position.x = newX;
+            position.y = newY;
+            drawCell(position.x, position.y, playerColor);
         }
 
-        drawCell(context, player.x, player.y, playerColor);
+        document.getElementById('save-button').onclick = () => {
+            save();
+        };
+
+        document.getElementById('load-button').onclick = () => {
+            load();
+        };
+
+        drawCell(position.x, position.y, playerColor);
 
         document.addEventListener('keydown', (event) => {
             let dx = 0;
@@ -203,7 +241,7 @@ function toHexColor(pixel) {
             <tr><th>←</th><td>←, 4</td><th>↑</th><td>↑, 2</td><th>↓</th><td>↓, 8</td><th>→</th><td>→, 6</td></tr>
         </table>
         <div>
-            <button id="keyboard-button">キーボードを表示</button> <strong>※スマートフォンの場合はこちらのボタンでキーボードを表示して下さい。</strong>
+            <button id="save-button">セーブ</button> <button id="load-button">ロード</button> <button id="keyboard-button">キーボードを表示</button> <strong>※スマートフォンの場合はこちらのボタンでキーボードを表示して下さい。</strong>
         </div>
     </div>
     <div id="control">
