@@ -18,19 +18,29 @@ main>header {
     width: 100%;
     margin: 0;
     padding: 0 20px;
-    position: sticky;
-    top: 0;
-    background: rgba(255, 255, 255, 0.9);
     display: flex;
     align-items: center;
+}
+
+input {
+    margin: 0;
+    padding: 0;
 }
 
 main>header>.item {
     margin-right: 20px;
 }
 
+#control {
+    height: 1px;
+}
+
+#control>input {
+    visibility: hidden;
+}
+
 #maze {
-    padding: 20px;
+    padding: 0 20px 20px 20px;
 }
 
 .pixelated {
@@ -51,7 +61,13 @@ const goalColor   = '#FF0000FF';
 
 const scale = 4;
 function main() {
-    console.log('100');
+    let input = document.getElementById('control').getElementsByTagName('input')[0];
+    document.getElementById('keyboard-button').onclick = () => {
+        input.style.visibility = 'visible';
+        input.focus();
+        input.style.visibility = 'hidden';
+    };
+
     let canvas = document.getElementById('maze').getElementsByTagName('canvas')[0];
     let context = canvas.getContext('2d');
 
@@ -99,13 +115,13 @@ function main() {
             let dx = 0;
             let dy = 0;
 
-            if (event.key == 'ArrowUp') {
+            if (event.key === 'ArrowUp' || event.key === '2') {
                 dy = -1;
-            } else if (event.key == 'ArrowDown') {
+            } else if (event.key === 'ArrowDown' || event.key === '8') {
                 dy = 1;
-            } else if (event.key == 'ArrowLeft') {
+            } else if (event.key === 'ArrowLeft' || event.key === '4') {
                 dx = -1;
-            } else if (event.key == 'ArrowRight') {
+            } else if (event.key === 'ArrowRight' || event.key === '6') {
                 dx = 1;
             } else {
                 return;
@@ -115,19 +131,6 @@ function main() {
 
             move(dx, dy);
         });
-
-        document.getElementById('left-button').onclick = () => {
-            move(-1, 0);
-        };
-        document.getElementById('up-button').onclick = () => {
-            move(0, -1);
-        };
-        document.getElementById('down-button').onclick = () => {
-            move(0, 1);
-        };
-        document.getElementById('right-button').onclick = () => {
-            move(1, 0);
-        };
     }, false);
 }
 
@@ -156,14 +159,15 @@ function toHexColor(pixel) {
     <header>
         <h1 class="item">HugeMaze</h1>
         <div class="item">
-            <button id="left-button">←</button>
-            <button id="up-button">↑</button>
-            <button id="down-button">↓</button>
-            <button id="right-button">→</button>
+            <button id="keyboard-button">Show Keyboard</button>
         </div>
+        <div class="item">← 4, ↑ 2, ↓ 8, → 6</div>
         <div class="item"><span style="color: #00FF00;">■</span>: PLAYER, </span><span style="color: #0000FF;">■</span>: START, <span style="color: #FF0000;">■</span>: GOAL</div>
         <div class="item">made with <a href="https://github.com/koher/makemaze">"makemaze"</a></div>
     </header>
+    <div id="control">
+            <input type="text" pattern="[0-9]*" />
+    </div>
     <div id="maze">
         <canvas class="pixelated" width="4092" height="4092"></canvas>
     </div>
